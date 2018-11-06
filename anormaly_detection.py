@@ -50,28 +50,14 @@ def vanilla_moving_average(series, window, plot_intervals=False, scale=1.96, plo
     plt.grid(True)
     plt.show()
 
-def compute_energy(vals, hop=320):
-    """compute the energy of audio signal
-
-    Args:
-      vals: audio signal
-
-    Returns:
-      List of audio energy data.
-    """
-    nhop = len(vals) // hop
-    result = []
-    for i in xrange(nhop):
-        result.append(np.mean(np.power(vals[i*hop:(i+1)*hop], 2.0)))
-    return np.array(result)
-
 def main():
     """main entrance function
 
     """
     data, _ = librosa.load("data/football_sample.mp3", sr=16000)
-    energy = compute_energy(librosa.to_mono(data))
-    vanilla_moving_average(pd.Series(energy), 4, plot_intervals=True, plot_anomalies=False)
+    energy = librosa.feature.rmse(y=data, frame_length=800, hop_length=800).flatten()
+    print(energy.shape)
+    vanilla_moving_average(pd.Series(energy), 10, plot_intervals=True, plot_anomalies=False)
 
 if __name__ == '__main__':
     main()
