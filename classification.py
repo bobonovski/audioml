@@ -4,9 +4,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os
 import argparse
-import logging
 import pickle
 
 import librosa
@@ -70,13 +68,10 @@ def main():
                         type=str, help='output filename for prediction result')
     args = parser.parse_args()
 
-    if args.train == True:
+    if args.train is True:
         svm_train(args.data_filename, args.model_filename)
-    if args.predict == True:
+    if args.predict is True:
         svm_predict(args.model_filename, args.audio_filename, args.output_filename)
 
 if __name__ == '__main__':
     main()
-
-
-
