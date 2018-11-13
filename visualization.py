@@ -1,3 +1,4 @@
+#-*- coding: utf8 -*-
 """"Visualization for audio signal"""
 from __future__ import absolute_import
 from __future__ import division
@@ -34,20 +35,16 @@ def visualize(argv):
     audio = load_data(argv.audio_file, argv.sample_rate, argv.offset, argv.duration)
     # RMSE energy
     rmse = librosa.feature.rmse(y=audio, frame_length=argv.fft_window, hop_length=argv.hop_length)
-    # melspectrogram
-    melspectrogram = librosa.feature.melspectrogram(y=audio,
-                                                    sr=argv.sample_rate,
-                                                    n_fft=argv.fft_window,
-                                                    hop_length=argv.hop_length)
     # MFCC
     mfcc = librosa.feature.mfcc(y=audio, sr=argv.sample_rate, n_mfcc=argv.mfcc_num)
-    # plot RMSE energy
+    # plot raw audio
     axe = plt.subplot(3, 1, 1)
+    axe.plot(np.arange(len(audio)), audio)
+    axe.set_title('Raw Audio')
+    # plot RMSE energy
+    axe = plt.subplot(3, 1, 2)
     axe.plot(np.arange(len(rmse.flatten())), rmse.flatten())
     axe.set_title('RMSE Energy')
-    # plot melspectrogram
-    plt.subplot(3, 1, 2)
-    librosa.display.specshow(melspectrogram)
     # plot MFCC
     plt.subplot(3, 1, 3)
     librosa.display.specshow(mfcc)
