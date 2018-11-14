@@ -84,6 +84,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--audio_filename',
                         type=str, help='audio filename')
+    parser.add_argument('--sample_rate',
+                        type=int, help='sample_rate', default=16000)
+    parser.add_argument('--fft_window',
+                        type=int, help='fft window', default=1600)
+    parser.add_argument('--hop_length',
+                        type=int, help='hop_length', default=800)
     parser.add_argument('--output_filename',
                         type=str, help='output filename for segmentation result')
     args = parser.parse_args()
