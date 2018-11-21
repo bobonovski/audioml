@@ -6,6 +6,9 @@ from __future__ import print_function
 
 import argparse
 import logging
+import errno
+import os
+import pickle
 
 import librosa
 from sklearn.preprocessing import normalize
@@ -14,22 +17,105 @@ from scipy.spatial.distance import pdist, cdist, squareform
 import numpy as np
 from six.moves import xrange
 
-def get_segment_points(audio_data, sample_rate=16000, fft_window=1600, hop_length=800):
+class KNN:
+    """k nearest neighbours classification"""
+    def __init__(self, features, labels, k):
+        self.features = features
+        self.labels = labels
+        self.k = k
+
+    def classify(self, data):
+        """Classify new data.
+
+        Args:
+          data: Test data point.
+
+        Returns:
+          Class label of the data point.
+        """
+        num_classes = np.unique(self.labels).shape[0]
+        distances = cdist(self.features, data.reshape(1, data.shape[0]))
+        indices = np.argsort(distances.flatten())
+        prob = np.zeros(num_classes)
+        for i in xrange(num_classes):
+            top_k_labels = self.labels[indices[0:self.k]]
+            prob[i] = np.sum(top_k_labels == i) / float(self.k)
+        return (np.argmax(prob), prob)
+
+def load_model(model_path):
+    """Load pre-trained kNN model.
+
+    Args:
+      model_path: File path of pre-trained model.
+
+    Raises:
+      FileNotFoundError: If the file is not found.
+    """
+    try:
+        model_file = open(model_path, 'rb')
+    except IOError:
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), model_path)
+
+    try:
+        features = pickle.load(model_file)
+        labels = pickle.load(model_file)
+        mean = pickle.load(model_file)
+        std = pickle.load(model_file)
+        classes = pickle.load(model_file)
+        # k in kNN
+        k = pickle.load(model_file)
+        middle_term_window = pickle.load(model_file)
+        middle_term_step = pickle.load(model_file)
+        short_term_window = pickle.load(model_file)
+        short_term_step = pickle.load(model_file)
+        beat = pickle.load(model_file)
+    except pickle.PickleError:
+        model_file.close()
+
+    features = np.array(features)
+    labels = np.array(labels)
+    mean = np.array(mean)
+    std = np.array(std)
+
+    classifier = KNN(features, labels, k)
+    return classifier, mean, std, classes, \
+           middle_term_window, middle_term_step, \
+           short_term_window, short_term_step, beat
+
+def extract_short_term_features(audio_data, 
+                                sample_rate=16000, window=1600, hop_length=800):
+    """Extract various short term features
+    
+    Args:
+      audio_data: Audio data sequence.
+      sample_rate: Sample rate of the audio.
+      window: Moving window of audio.
+      hop_length: Hop length of moving window.
+    
+    Returns:
+      Dictionary of extracted features.
+    """
+    audio = n
+
+def get_segment_points(audio_data, sample_rate=16000, model_path='model'):
     """Get segmentation time points
 
-      Args:
-        audio_data: audio time series
-        sample_rate: audio sample rate
+    Args:
+      audio_data: audio time series
+      sample_rate: audio sample rate
 
-      Returns:
-        segmentation time points sequence
+    Returns:
+      segmentation time points sequence
     """
-    # Extract MFCC features
-    mfcc = librosa.feature.mfcc(y=audio_data,
-                                sr=sample_rate,
-                                n_fft=fft_window,
-                                hop_length=hop_length)
-    feats = normalize(mfcc.T)
+    # Load pre-trained audio classifier
+    general_model_path = os.path.join(model_path, "knnSpeakerAll")
+    gender_model_path = os.path.join(model_path, "knnSpeakerFemaleMale")
+    general_model_info = self.load_model(general_model_path)
+    gender_model_info = self.load_model(gender_model_path)
+    general_classifier, general_mean, general_std, general_classes = gender_model_info[0:4]
+    gender_classifier, gender_mean, gender_std, gender_classes = gender_model_info[0:4]
+    # Extract features
+    
     # Clustering with several candidate cluster numbers,
     # the optimal cluster number will be chosen with
     # Silhouette score.
