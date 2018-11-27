@@ -4,9 +4,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os
 import argparse
-import logging
 
 import librosa
 import numpy as np
@@ -25,7 +23,7 @@ def extract_short_term_features(audio_data,
     Returns:
       array of extracted features.
     """
-    fft_window = int(window / 2)
+    fft_window = window
     chroma_stft = librosa.feature.chroma_stft(y=audio_data,
                                               sr=sample_rate,
                                               hop_length=hop_length,
@@ -72,21 +70,35 @@ def extract_short_term_features(audio_data,
 def extract_middle_term_features(audio_data, sample_rate,
                                  middle_term_window, middle_term_step,
                                  short_term_window, short_term_step):
+    """Extract middle term audio features
+
+    Args:
+      audio_data: Audio signal sequence.
+      sample_rate: Sample rate of the audio signal.
+      middle_term_window: Window size for extracting middle term features.
+      middle_term_step: Step size for extracting middle term features.
+      short_term_window: Window size for extracting short term features.
+      short_term_step: Step size for extracting short term features.
+
+    Returns:
+      mt_features: Middle term features.
+      st_features: Short term features.
+    """
     st_features = extract_short_term_features(audio_data, sample_rate,
-                                           short_term_window, short_term_step)
+                                              short_term_window, short_term_step)
     mt_win = int(round(middle_term_window) / short_term_step)
     mt_step = int(round(middle_term_step) / short_term_step)
     # Compute middle term features
     mt_feature_mean = np.apply_along_axis(rolling_stats, 1, st_features,
                                           mt_win, mt_step, np.mean)
     mt_feature_std = np.apply_along_axis(rolling_stats, 1, st_features,
-                                          mt_win, mt_step, np.std)
+                                         mt_win, mt_step, np.std)
     mt_features = np.vstack((mt_feature_mean, mt_feature_std))
     return mt_features, st_features
 
 def rolling_stats(data, window, step, func):
     """Compute the rolling statistics of the data
-    
+
     Args:
       data: Data array.
       window: Rolling window.
@@ -111,9 +123,9 @@ def main():
     args = parser.parse_args()
 
     audio_data, sample_rate = librosa.load(args.audio_filename, sr=16000)
-    feats = extract_short_term_features(audio_data, 
-                                        sample_rate, 
-                                        window=800, 
+    feats = extract_short_term_features(audio_data,
+                                        sample_rate,
+                                        window=800,
                                         hop_length=400)
     print(feats.shape)
     mt_feats, st_feats = extract_middle_term_features(audio_data, sample_rate,

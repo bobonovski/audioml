@@ -11,11 +11,12 @@ import os
 import pickle
 
 import librosa
-from sklearn.preprocessing import normalize
+from sklearn.preprocessing import scale
 from sklearn.cluster import KMeans
 from scipy.spatial.distance import pdist, cdist, squareform
 import numpy as np
 from six.moves import xrange
+from feature_extraction import extract_middle_term_feature
 
 class KNN:
     """k nearest neighbours classification"""
@@ -82,21 +83,6 @@ def load_model(model_path):
            middle_term_window, middle_term_step, \
            short_term_window, short_term_step, beat
 
-def extract_short_term_features(audio_data, 
-                                sample_rate=16000, window=1600, hop_length=800):
-    """Extract various short term features
-    
-    Args:
-      audio_data: Audio data sequence.
-      sample_rate: Sample rate of the audio.
-      window: Moving window of audio.
-      hop_length: Hop length of moving window.
-    
-    Returns:
-      Dictionary of extracted features.
-    """
-    audio = n
-
 def get_segment_points(audio_data, sample_rate=16000, model_path='model'):
     """Get segmentation time points
 
@@ -108,14 +94,16 @@ def get_segment_points(audio_data, sample_rate=16000, model_path='model'):
       segmentation time points sequence
     """
     # Load pre-trained audio classifier
-    general_model_path = os.path.join(model_path, "knnSpeakerAll")
-    gender_model_path = os.path.join(model_path, "knnSpeakerFemaleMale")
-    general_model_info = self.load_model(general_model_path)
-    gender_model_info = self.load_model(gender_model_path)
-    general_classifier, general_mean, general_std, general_classes = gender_model_info[0:4]
-    gender_classifier, gender_mean, gender_std, gender_classes = gender_model_info[0:4]
-    # Extract features
+    # general_model_path = os.path.join(model_path, "knnSpeakerAll")
+    # gender_model_path = os.path.join(model_path, "knnSpeakerFemaleMale")
+    # general_model_info = self.load_model(general_model_path)
+    # gender_model_info = self.load_model(gender_model_path)
+    # general_classifier, general_mean, general_std, general_classes = gender_model_info[0:4]
+    # gender_classifier, gender_mean, gender_std, gender_classes = gender_model_info[0:4]
     
+    # Extract features
+    mt_features, st_features = extract_middle_term_feature(audio_data)
+    mt_features_scaled = scale(mt_features)
     # Clustering with several candidate cluster numbers,
     # the optimal cluster number will be chosen with
     # Silhouette score.

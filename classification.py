@@ -9,7 +9,8 @@ import pickle
 
 import librosa
 import numpy as np
-from sklearn import svm, grid_search
+from sklearn import svm
+from sklearn.model_selection import GridSearchCV
 
 def svm_train(data_filename, model_filename):
     """Train SVM classification model
@@ -29,12 +30,12 @@ def svm_train(data_filename, model_filename):
     }
     # SVM model
     # model = sklearn.svm.SVC(verbose=True)
-    model = GridSearch(svm.SVC(), params, cv=10)
+    model = GridSearchCV(svm.SVC(), params, cv=10, verbose=4, n_jobs=4)
     model.fit(features, labels)
     print('Best parameters: ', model.best_params_)
     # Dump model
     output_file = open(model_filename, 'wb')
-    pickle.dump(model, output_file)
+    pickle.dump(model.best_estimator, output_file)
     output_file.close()
 
 def svm_predict(model_filename, audio_filename, output_filename):
