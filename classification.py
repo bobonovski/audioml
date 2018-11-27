@@ -28,7 +28,7 @@ def svm_train(data_filename, model_filename):
         'gamma': [0.001, 0.01, 0.1, 1.0]
     }
     # SVM model
-    model = sklearn.svm.SVC(verbose=True)
+    # model = sklearn.svm.SVC(verbose=True)
     model = GridSearch(svm.SVC(), params, cv=10)
     model.fit(features, labels)
     print('Best parameters: ', model.best_params_)
