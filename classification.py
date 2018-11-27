@@ -9,7 +9,7 @@ import pickle
 
 import librosa
 import numpy as np
-import sklearn
+from sklearn import svm, grid_search
 
 def svm_train(data_filename, model_filename):
     """Train SVM classification model
@@ -22,9 +22,16 @@ def svm_train(data_filename, model_filename):
     data = np.load(data_filename)
     features = data[:, 1:]
     labels = data[:, 0]
+    # Grid search params
+    params = {
+        'C': [0.001, 0.01, 0.1, 1.0, 5.0, 10.0],
+        'gamma': [0.001, 0.01, 0.1, 1.0]
+    }
     # SVM model
     model = sklearn.svm.SVC(verbose=True)
+    model = GridSearch(svm.SVC(), params, cv=10)
     model.fit(features, labels)
+    print('Best parameters: ', model.best_params_)
     # Dump model
     output_file = open(model_filename, 'wb')
     pickle.dump(model, output_file)
@@ -63,7 +70,7 @@ def main():
     parser.add_argument('--model_filename',
                         type=str, help='model filename', required=True)
     parser.add_argument('--audio_filename',
-                        type=str, help='audio filename')
+                        type=str, help='audio filename for prediction')
     parser.add_argument('--output_filename',
                         type=str, help='output filename for prediction result')
     args = parser.parse_args()
